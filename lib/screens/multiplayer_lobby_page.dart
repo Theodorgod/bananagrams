@@ -37,8 +37,11 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage> {
   void dispose() {
     _nameController.dispose();
     _addressController.dispose();
-    _host?.dispose();
-    _client?.dispose();
+    // Once we've navigated to the game page, it owns the controller's lifecycle.
+    if (!_navigated) {
+      _host?.dispose();
+      _client?.dispose();
+    }
     super.dispose();
   }
 

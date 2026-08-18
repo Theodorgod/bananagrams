@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
-
 import '../models/board.dart';
 import '../models/tile.dart';
 import '../rules/tile_pool.dart';
@@ -19,11 +17,12 @@ class _PlayerSession {
   Board board = const Board();
   List<GameTile> availableTiles = [];
   int score = 0;
+  String? lastError;
 }
 
 /// Runs a LAN Bananagrams match: accepts player connections, deals from a
 /// single shared tile pool, and is the sole authority validating every move.
-class GameHostServer extends ChangeNotifier implements MultiplayerController {
+class GameHostServer extends MultiplayerController {
   GameHostServer({WordValidator? validator, Random? random})
       : _validator = validator ?? const WordValidator(words: {}),
         _random = random ?? Random();
@@ -54,6 +53,7 @@ class GameHostServer extends ChangeNotifier implements MultiplayerController {
         score: _host.score,
         poolCount: _pool.length,
         players: roster,
+        validationError: _host.lastError,
       );
 
   @override
@@ -218,6 +218,7 @@ class GameHostServer extends ChangeNotifier implements MultiplayerController {
     player.availableTiles = [...player.availableTiles]..removeAt(index);
     player.board = player.board.placeTile(position, tile);
     player.score = _validator.calculateScore(player.board);
+    player.lastError = null;
     _sendState(player);
     _broadcastRoster();
     notifyListeners();
@@ -231,6 +232,7 @@ class GameHostServer extends ChangeNotifier implements MultiplayerController {
     player.board = player.board.removeTile(position);
     player.availableTiles = [...player.availableTiles, tile];
     player.score = _validator.calculateScore(player.board);
+    player.lastError = null;
     _sendState(player);
     _broadcastRoster();
     notifyListeners();
@@ -247,6 +249,7 @@ class GameHostServer extends ChangeNotifier implements MultiplayerController {
     final drawCount = min(3, pool.length);
     player.availableTiles = [...nextAvailable, ...pool.take(drawCount)];
     _pool = pool.skip(drawCount).toList();
+    player.lastError = null;
     _sendState(player);
     _broadcastRoster();
     notifyListeners();
@@ -260,20 +263,23 @@ class GameHostServer extends ChangeNotifier implements MultiplayerController {
     }
     final validation = _validator.validate(player.board);
     if (!validation.isValid) {
-      _sendState(
-        player,
-        validationError: 'Invalid words: ${validation.invalidWords.join(', ')}',
-      );
+      player.lastError =
+          'Invalid words: ${validation.invalidWords.join(', ')}';
+      _sendState(player, validationError: player.lastError);
+      notifyListeners();
       return;
     }
     if (_pool.length < _players.length) {
-      _sendState(player, validationError: 'Not enough tiles left to peel');
+      player.lastError = 'Not enough tiles left to peel';
+      _sendState(player, validationError: player.lastError);
+      notifyListeners();
       return;
     }
 
     for (final other in _players) {
       final drawn = _pool.removeAt(0);
       other.availableTiles = [...other.availableTiles, drawn];
+      other.lastError = null;
     }
     for (final other in _players) {
       _sendState(other);

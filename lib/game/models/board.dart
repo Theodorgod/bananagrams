@@ -37,20 +37,15 @@ class Board {
 
   bool isOccupied(BoardPosition position) => tiles.containsKey(position);
 
-  // Grows every side by one when a tile lands on the edge or one cell from
-  // it, so the board always expands equally and stays square.
+  // Grows only the side(s) a tile lands near — a single edge grows that one
+  // side; a corner grows its row side and column side together.
   Board placeTile(BoardPosition position, GameTile tile) {
-    final needsGrowth = position.row <= minRow + 1 ||
-        position.row >= maxRow - 1 ||
-        position.column <= minCol + 1 ||
-        position.column >= maxCol - 1;
-
     return Board(
       tiles: {...tiles, position: tile},
-      minRow: needsGrowth ? minRow - 1 : minRow,
-      maxRow: needsGrowth ? maxRow + 1 : maxRow,
-      minCol: needsGrowth ? minCol - 1 : minCol,
-      maxCol: needsGrowth ? maxCol + 1 : maxCol,
+      minRow: position.row <= minRow + 1 ? minRow - 1 : minRow,
+      maxRow: position.row >= maxRow - 1 ? maxRow + 1 : maxRow,
+      minCol: position.column <= minCol + 1 ? minCol - 1 : minCol,
+      maxCol: position.column >= maxCol - 1 ? maxCol + 1 : maxCol,
     );
   }
 

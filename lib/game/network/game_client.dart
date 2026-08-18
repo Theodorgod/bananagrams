@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-
 import '../models/board.dart';
 import '../models/tile.dart';
 import 'multiplayer_models.dart';
@@ -11,7 +9,7 @@ import 'multiplayer_models.dart';
 /// Client-side connection to a [GameHostServer] over the local network.
 /// The host validates every move; this class only relays actions and
 /// reflects back whatever authoritative state the host sends.
-class GameClientConnection extends ChangeNotifier implements MultiplayerController {
+class GameClientConnection extends MultiplayerController {
   Socket? _socket;
   StreamSubscription<String>? _subscription;
   String _name = '';

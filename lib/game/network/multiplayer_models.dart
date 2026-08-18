@@ -87,9 +87,9 @@ class MultiplayerGameState {
   }
 }
 
-/// Common surface implemented by both the host (playing locally) and remote 
+/// Common surface implemented by both the host (playing locally) and remote
 /// clients, so the game UI doesn't need to know which one it's talking to.
-abstract class MultiplayerController implements Listenable {
+abstract class MultiplayerController extends ChangeNotifier {
   MultiplayerGameState get multiplayerState;
   void placeTile(String tileId, BoardPosition position);
   void removeTile(BoardPosition position);
