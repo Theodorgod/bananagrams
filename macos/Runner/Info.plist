@@ -28,5 +28,11 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Bananagrams needs local network access to host and join LAN games with other players.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_bananagrams._tcp</string>
+	</array>
 </dict>
 </plist>
