@@ -1,0 +1,30 @@
+name: Build macOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - run: flutter pub get
+
+      - run: flutter build macos --release
+
+      - name: Zip the app bundle
+        run: |
+          cd build/macos/Build/Products/Release
+          zip -r bananagrams-macos.zip bananagrams.app
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bananagrams-macos
+          path: build/macos/Build/Products/Release/bananagrams-macos.zip
